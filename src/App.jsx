@@ -1,5 +1,5 @@
 import "./styles.css";
-
+import BarChartComponent from "./charts/BarChartComponent";
 const objectives = [
   {
     title: "Cut customer onboarding drop-off to under 18%",
@@ -237,6 +237,9 @@ export default function App() {
           </div>
         </section>
       </main>
+      <div style={{ padding: '20px', width: '100%', boxSizing: 'border-box' }}>
+  <BarChartComponent />
+</div>
     </div>
   );
 }
