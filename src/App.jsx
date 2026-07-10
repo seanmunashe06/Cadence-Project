@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import PerformanceCharts from './charts/PerformanceCharts'
 
 const views = [
   { id: 'command', label: 'Command center', icon: 'command' },
@@ -175,6 +176,7 @@ function App() {
   const [reminderTab, setReminderTab] = useState('sets')
   const [peopleTab, setPeopleTab] = useState('directory')
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [selectedAttestation, setSelectedAttestation] = useState(null)
   const [curveValues, setCurveValues] = useState([10, 20, 55, 12, 3])
   const [phaseStates, setPhaseStates] = useState([true, true, true, true, true, true])
   const [reviewSwitches, setReviewSwitches] = useState([true, true, true, false])
@@ -849,7 +851,15 @@ function App() {
                       <div className="lr-name">{person}</div>
                       <div className="lr-sub">{peopleTab === 'access' ? 'Pending review · 4 days left' : 'People Operations · you'}</div>
                     </div>
-                    <div className="lr-right"><span className={`access-badge ${peopleTab === 'access' ? 'hrbp' : 'admin'}`}>{peopleTab === 'access' ? 'Review' : 'Admin'}</span></div>
+                    <div className="lr-right">
+                      {peopleTab === 'access' ? (
+                        <button type="button" className="btn btn-sm btn-ghost" onClick={() => setSelectedAttestation({ person, detail: 'Access review pending for this role. Review the scope, permissions, and ownership before approval.' })}>
+                          Review
+                        </button>
+                      ) : (
+                        <span className="access-badge admin">Admin</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -891,6 +901,12 @@ function App() {
                 <div className="focus-item"><span>Active cycle</span><b>{activeCycle.title}</b></div>
                 <div className="focus-item"><span>State updates</span><b>{reactPulse} live interactions</b></div>
                 <div className="focus-item"><span>Priority</span><b>Operations needs attention</b></div>
+                <button type="button" className="focus-link" onClick={() => handleViewSelect('cycles')}>
+                  Review
+                </button>
+                <button type="button" className="focus-link" onClick={() => handleViewSelect('people')}>
+                  People & access
+                </button>
               </div>
             </div>
           </div>
@@ -969,6 +985,7 @@ function App() {
 
           <div className="card card-pad">
             <div className="section-heading">Completion by division</div>
+            <PerformanceCharts />
             <table className="tbl">
               <thead>
                 <tr>
@@ -1087,6 +1104,45 @@ function App() {
           ) : null}
         </div>
       </div>
+      {selectedAttestation ? (
+        <div className="modal-backdrop" onClick={() => setSelectedAttestation(null)}>
+          <div className="modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="eyebrow">Attestation review</div>
+                <h3>{selectedAttestation.person}</h3>
+              </div>
+              <button type="button" className="icon-btn" aria-label="Close review panel" onClick={() => setSelectedAttestation(null)}>
+                <SvgIcon><path d="M6 6l12 12M18 6 6 18" /></SvgIcon>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="modal-card-mini">
+                <strong>Review details</strong>
+                <span>{selectedAttestation.detail}</span>
+              </div>
+              <div className="modal-grid">
+                <div className="modal-field">
+                  <label>Current access</label>
+                  <input value="Manager + reporting access" readOnly />
+                </div>
+                <div className="modal-field">
+                  <label>Last reviewed</label>
+                  <input value="3 days ago" readOnly />
+                </div>
+              </div>
+              <div className="modal-field">
+                <label>Notes</label>
+                <textarea rows="4" defaultValue="Ensure the role still needs this access and that the direct reports remain accurate before approval." />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-ghost" onClick={() => setSelectedAttestation(null)}>Close</button>
+              <button type="button" className="btn btn-primary">Approve</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {showCreateModal ? (
         <div className="modal-backdrop" onClick={closeCreateModal}>
           <div className="modal-card" onClick={(event) => event.stopPropagation()}>
