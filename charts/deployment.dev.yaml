@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: charts-frontend-dev
+  labels:
+    app: charts-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: charts-dev
+  template:
+    metadata:
+      labels:
+        app: charts-dev
+    spec:
+      containers:
+        - name: charts-frontend
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: charts-content
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: charts-content
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: charts-frontend-service-dev
+spec:
+  selector:
+    app: charts-dev
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:dev": "vite build --outDir charts/dev --emptyOutDir && node scripts/postbuild.js dev",
+    "build:uat": "vite build --outDir charts/UAT --emptyOutDir && node scripts/postbuild.js uat",
+    "build:prod": "vite build --outDir charts/prod --emptyOutDir && node scripts/postbuild.js prod",
+    "build:ovh": "npm run build:dev && npm run build:uat && npm run build:prod",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -17,6 +21,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.5.2",
     "oxlint": "^1.71.0",
     "vite": "^8.1.1"
   }

@@ -32,12 +32,6 @@ const cycleRows = [
   { name: 'People & Culture', population: '81', progress: 58, overdue: 15, action: 'Remind' },
 ]
 
-const competencies = [
-  { title: 'Delivery & impact', body: 'Ships outcomes that move the metrics that matter', weight: '30%' },
-  { title: 'Collaboration', body: 'Builds trust and lifts the people around them', weight: '25%' },
-  { title: 'Craft & judgement', body: 'Deep skill and sound calls under ambiguity', weight: '25%' },
-  { title: 'Ownership & growth', body: 'Seeks stretch and takes responsibility unprompted', weight: '20%' },
-]
 
 const sessions = [
   { title: 'Sales calibration', detail: '28 Jul · 14:00 · 9 leaders · 312 people', status: 'Scheduled' },
@@ -206,6 +200,65 @@ function App() {
     deadline: '2026-11-15',
     population: '240',
   })
+
+  const [sessionsState, setSessionsState] = useState(sessions)
+  const [selectedSessionToSchedule, setSelectedSessionToSchedule] = useState(null)
+  const [reminderSwitchesState, setReminderSwitchesState] = useState([true, true, true, true, true, true])
+  const [selectedPreview, setSelectedPreview] = useState(null)
+  const [pendingAttestations, setPendingAttestations] = useState(['Operations managers', 'Finance leads', 'HRBPs'])
+
+  const handleApproveAttestation = (person) => {
+    setPendingAttestations((current) => current.filter((item) => item !== person))
+    setSelectedAttestation(null)
+    setReactPulse((value) => value + 1)
+  }
+
+  const toggleReminderSwitch = (index) => {
+    setReminderSwitchesState((current) => current.map((state, stateIndex) => (stateIndex === index ? !state : state)))
+    setReactPulse((value) => value + 1)
+  }
+
+  const handleSessionClick = (session, index) => {
+    setSelectedSessionToSchedule({ ...session, index })
+  }
+
+  const handleSaveSessionSchedule = (event) => {
+    event.preventDefault()
+    const form = event.target
+    const dateVal = form.elements['session-date'].value
+    const timeVal = form.elements['session-time'].value
+
+    const dateObj = new Date(dateVal)
+    const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+
+    const updatedSessions = sessionsState.map((item, idx) => {
+      if (idx === selectedSessionToSchedule.index) {
+        let suffix = ''
+        if (item.detail.includes('Not yet scheduled')) {
+          const parts = item.detail.split('·')
+          suffix = parts.slice(1).join('·').trim()
+        } else {
+          const parts = item.detail.split('·')
+          if (parts.length > 2) {
+            suffix = parts.slice(2).join('·').trim()
+          } else {
+            suffix = parts.join('·').trim()
+          }
+        }
+        
+        return {
+          ...item,
+          status: 'Scheduled',
+          detail: `${formattedDate} · ${timeVal} · ${suffix}`
+        }
+      }
+      return item
+    })
+
+    setSessionsState(updatedSessions)
+    setSelectedSessionToSchedule(null)
+    setReactPulse((value) => value + 1)
+  }
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId) || cycles[0]
   const curveTotal = curveValues.reduce((sum, value) => sum + value, 0)
@@ -735,15 +788,24 @@ function App() {
             <div className="card-pad" style={{ paddingBottom: 8 }}>
               <div className="section-heading">Scheduled sessions</div>
             </div>
-            {sessions.map((session) => (
-              <div key={session.title} className="list-row" style={{ padding: '12px 20px' }}>
+            {sessionsState.map((session, index) => (
+              <button
+                key={session.title}
+                type="button"
+                className="list-row list-row-btn"
+                onClick={() => handleSessionClick(session, index)}
+              >
                 <div className="icon-badge">📅</div>
-                <div>
+                <div style={{ flex: 1, textAlign: 'left' }}>
                   <div className="lr-name">{session.title}</div>
                   <div className="lr-sub">{session.detail}</div>
                 </div>
-                <div className="lr-right"><span className={`chip ${session.status === 'Scheduled' ? 'ontrack' : 'neutral'}`}>{session.status}</span></div>
-              </div>
+                <div className="lr-right">
+                  <span className={`chip ${session.status === 'Scheduled' ? 'ontrack' : 'neutral'}`}>
+                    {session.status}
+                  </span>
+                </div>
+              </button>
             ))}
           </div>
 
@@ -791,14 +853,44 @@ function App() {
                   ['Opening nudge', 'Escalation note', 'Completion thank-you'].map((label, index) => (
                     <div key={label} className="setting">
                       <div className="setting-lbl">{label}<small>{index === 0 ? 'Friendly and action-oriented' : index === 1 ? 'Clear ownership and deadline' : 'Warm and appreciative'}</small></div>
-                      <button type="button" className="btn btn-sm btn-ghost">Preview</button>
+                      <button 
+                        type="button" 
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => {
+                          let content = '';
+                          let subject = '';
+                          if (index === 0) {
+                            subject = 'Action required: H1 2026 Mid-Year Review is now open';
+                            content = 'Hi {{employee_name}},\n\nThe H1 2026 Mid-Year Review cycle has officially started. Please take a few minutes to complete your self-assessment before the deadline on August 22, 2026.\n\nBest regards,\nPeople Operations';
+                          } else if (index === 1) {
+                            subject = 'Reminder: H1 2026 Mid-Year Review is overdue';
+                            content = 'Hi {{employee_name}},\n\nYour self-assessment for the H1 2026 Mid-Year Review is currently overdue. Please complete it as soon as possible to avoid escalation to your department lead.\n\nBest regards,\nPeople Operations';
+                          } else {
+                            subject = 'Thank you for completing your review';
+                            content = 'Hi {{employee_name}},\n\nThank you for submitting your H1 2026 Mid-Year Review self-assessment. Your manager has been notified and will proceed with their review.\n\nBest regards,\nPeople Operations';
+                          }
+                          setSelectedPreview({ label, subject, content });
+                        }}
+                      >
+                        Preview
+                      </button>
                     </div>
                   ))
                 ) : (
                   ['First reminder', 'Halfway nudge', 'Final call', 'Escalate to manager manager', 'Weekly digest to HRBPs', 'Quiet weekends'].map((label, index) => (
-                    <div key={label} className="setting">
+                    <div 
+                      key={label} 
+                      className="setting setting-btn" 
+                      onClick={() => toggleReminderSwitch(index)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className="setting-lbl">{label}<small>{index === 0 ? '3 days after a phase opens' : index === 1 ? 'Midpoint of the phase window' : index === 2 ? '2 days before deadline' : index === 3 ? 'When still overdue after deadline' : index === 4 ? 'Completion summary every Monday' : 'Hold non-urgent nudges Sat–Sun'}</small></div>
-                      <button type="button" className="switch on" aria-label={`Toggle ${label}`} />
+                      <button 
+                        type="button" 
+                        className={`switch ${reminderSwitchesState[index] ? 'on' : ''}`} 
+                        aria-label={`Toggle ${label}`} 
+                        onClick={(e) => { e.stopPropagation(); toggleReminderSwitch(index); }}
+                      />
                     </div>
                   ))
                 )}
@@ -844,7 +936,7 @@ function App() {
             <div className="card">
               <div className="card-pad">
                 <div className="section-heading">{peopleTab === 'access' ? 'Pending attestations' : 'People with elevated access'}</div>
-                {(peopleTab === 'access' ? ['Operations managers', 'Finance leads', 'HRBPs'] : ['Mpho Radebe', 'Gugu Mthembu', 'Pretty Ngwenya', 'Tebogo Mahlangu']).map((person) => (
+                {(peopleTab === 'access' ? pendingAttestations : ['Mpho Radebe', 'Gugu Mthembu', 'Pretty Ngwenya', 'Tebogo Mahlangu']).map((person) => (
                   <div key={person} className="list-row">
                     <div className="avatar">{person.split(' ').map((word) => word[0]).join('')}</div>
                     <div>
@@ -1049,8 +1141,32 @@ function App() {
               {showNotifications ? (
                 <div className="notification-card">
                   <div className="section-heading">Notifications</div>
-                  <div className="notification-item"><strong>3 reminders</strong><span>Due today for Finance and Ops</span></div>
-                  <div className="notification-item"><strong>1 escalation</strong><span>Operations review needs attention</span></div>
+                  <button 
+                    type="button" 
+                    className="notification-item" 
+                    onClick={() => { 
+                      setActiveView('notifications'); 
+                      setReminderTab('sets'); 
+                      setShowNotifications(false); 
+                      setReactPulse((v) => v + 1); 
+                    }}
+                  >
+                    <strong>3 reminders</strong>
+                    <span>Due today for Finance and Ops</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="notification-item" 
+                    onClick={() => { 
+                      setActiveView('cycles'); 
+                      setCycleTab(1); 
+                      setShowNotifications(false); 
+                      setReactPulse((v) => v + 1); 
+                    }}
+                  >
+                    <strong>1 escalation</strong>
+                    <span>Operations review needs attention</span>
+                  </button>
                 </div>
               ) : null}
             </div>
@@ -1138,7 +1254,7 @@ function App() {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-ghost" onClick={() => setSelectedAttestation(null)}>Close</button>
-              <button type="button" className="btn btn-primary">Approve</button>
+              <button type="button" className="btn btn-primary" onClick={() => handleApproveAttestation(selectedAttestation.person)}>Approve</button>
             </div>
           </div>
         </div>
@@ -1202,6 +1318,69 @@ function App() {
               <button type="button" className="btn btn-primary" onClick={handleCreateCycleSubmit}>Create cycle</button>
             </div>
           </div>
+        </div>
+      ) : null}
+      {selectedPreview ? (
+        <div className="modal-backdrop" onClick={() => setSelectedPreview(null)}>
+          <div className="modal-card" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="eyebrow">Template preview</div>
+                <h3>{selectedPreview.label}</h3>
+              </div>
+              <button type="button" className="icon-btn" aria-label="Close preview panel" onClick={() => setSelectedPreview(null)}>
+                <SvgIcon><path d="M6 6l12 12M18 6 6 18" /></SvgIcon>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="modal-field">
+                <label>Subject</label>
+                <input value={selectedPreview.subject} readOnly style={{ width: '100%' }} />
+              </div>
+              <div className="modal-field">
+                <label>Body</label>
+                <textarea rows="6" value={selectedPreview.content} readOnly style={{ width: '100%', fontFamily: 'inherit', resize: 'none' }} />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-primary" onClick={() => setSelectedPreview(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {selectedSessionToSchedule ? (
+        <div className="modal-backdrop" onClick={() => setSelectedSessionToSchedule(null)}>
+          <form className="modal-card" onClick={(event) => event.stopPropagation()} onSubmit={handleSaveSessionSchedule}>
+            <div className="modal-header">
+              <div>
+                <div className="eyebrow">Schedule Calibration Session</div>
+                <h3>{selectedSessionToSchedule.title}</h3>
+              </div>
+              <button type="button" className="icon-btn" aria-label="Close scheduling panel" onClick={() => setSelectedSessionToSchedule(null)}>
+                <SvgIcon><path d="M6 6l12 12M18 6 6 18" /></SvgIcon>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="modal-grid">
+                <div className="modal-field">
+                  <label htmlFor="session-date">Date</label>
+                  <input id="session-date" type="date" required defaultValue="2026-08-01" />
+                </div>
+                <div className="modal-field">
+                  <label htmlFor="session-time">Time</label>
+                  <input id="session-time" type="time" required defaultValue="14:00" />
+                </div>
+              </div>
+              <div className="modal-card-mini">
+                <strong>Schedule details</strong>
+                <span>{selectedSessionToSchedule.detail}</span>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-ghost" onClick={() => setSelectedSessionToSchedule(null)}>Cancel</button>
+              <button type="submit" className="btn btn-primary">Save Schedule</button>
+            </div>
+          </form>
         </div>
       ) : null}
     </div>
