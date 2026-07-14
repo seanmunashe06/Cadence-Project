@@ -1,11 +1,18 @@
 {
+<<<<<<< HEAD
   "name": "cadence-performance-platform",
   "private": true,
   "version": "1.0.0",
+=======
+  "name": "my-react-app",
+  "private": true,
+  "version": "0.0.0",
+>>>>>>> d4d574223e1c9e5cc8a19141a9ea92901ded94d7
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+<<<<<<< HEAD
     "preview": "vite preview"
   },
   "dependencies": {
@@ -17,3 +24,23 @@
     "vite": "^5.4.0"
   }
 }
+=======
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^1.24.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1",
+    "recharts": "^3.9.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "vite": "^8.1.1"
+  }
+}
+>>>>>>> d4d574223e1c9e5cc8a19141a9ea92901ded94d7
