@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: YOUR_DOCKER_USERNAME/cadence-performance-platform
+  tag: dev
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+
+env: development

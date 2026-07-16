@@ -1,0 +1,46 @@
+name: Cadence Performance Platform CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - uat
+      - production
+
+  pull_request:
+    branches:
+      - main
+      - develop
+      - uat
+      - production
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint --if-present
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadence-build
+          path: dist

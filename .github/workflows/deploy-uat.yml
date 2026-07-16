@@ -1,0 +1,27 @@
+name: Deploy UAT
+
+on:
+  push:
+    branches:
+      - uat
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Deploy UAT
+        run: |
+          helm upgrade --install cadence-uat ./charts \
+            -f charts/values-uat.yaml \
+            --namespace cadence-uat \
+            --create-namespace

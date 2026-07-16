@@ -1,8 +1,8 @@
 import React from "react";
 
-import PerformanceTrend from "../charts/PerformanceTrend";
-import GoalProgress from "../charts/GoalProgress";
-import ReviewAnalytics from "../charts/ReviewAnalytics";
+import PerformanceTrend from "../chart-components/PerformanceTrend";
+import GoalProgress from "../chart-components/GoalProgress";
+import ReviewAnalytics from "../chart-components/ReviewAnalytics";
 
 
 function Charts(){

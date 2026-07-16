@@ -1,0 +1,31 @@
+name: Deploy Development
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy to Development
+        run: |
+          helm upgrade --install cadence-dev ./charts \
+            -f charts/values-dev.yaml \
+            --namespace cadence-dev \
+            --create-namespace

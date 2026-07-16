@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cadence-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cadence
+  template:
+    metadata:
+      labels:
+        app: cadence
+    spec:
+      containers:
+        - name: cadence-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: cadence-config
