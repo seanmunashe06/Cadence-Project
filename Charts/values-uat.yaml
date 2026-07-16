@@ -1,6 +1,0 @@
-replicaCount: 2
-
-image:
-  tag: uat
-
-env: uat

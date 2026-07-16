@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: cadence-performance-prod
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: cadence-performance
+
+  template:
+    metadata:
+      labels:
+        app: cadence-performance
+
+    spec:
+      containers:
+        - name: cadence-ui
+
+          image: kaributechworkflow/cadence-performance-platform:latest
+
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 80
+
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

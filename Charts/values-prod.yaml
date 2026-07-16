@@ -1,6 +1,0 @@
-replicaCount: 3
-
-image:
-  tag: prod
-
-env: production

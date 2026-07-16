@@ -1,8 +1,3 @@
 #!/bin/bash
 
-echo "Building Cadence Performance Platform..."
-
-npm install
-npm run build
-
-echo "Build complete."
+docker build -t YOUR_DOCKER_USERNAME/cadence-performance-platform:latest .
